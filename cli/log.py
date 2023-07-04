@@ -1,4 +1,4 @@
-from colours import *
+from cli.colours import *
 
 def error(message):
 	print(f"{RED}X{RESET} {message}")
@@ -15,5 +15,5 @@ def debug(message):
 def info(message):
 	print(f"{BLUE}>{RESET} {message}")
 
-def note(message):
+def verbose(message):
 	print(f"{MAGENTA}@{RESET} {message}")

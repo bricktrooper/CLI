@@ -1,4 +1,4 @@
-import log
+from cli import log
 
 ERROR = -1
 SUCCESS = 0
@@ -18,10 +18,12 @@ class Command:
 		self.min = min
 		self.max = max
 
-		if verbose:
-			log.verbose(f"Initialized '{self.prefix} <{self.min}, {self.max}>'")
-
+		self.log_verbose(f"Initialized '{self.prefix} <{self.min}, {self.max}>'")
 		self.subcommand(SUBCOMMAND_HELP, self.help, "")
+
+	def log_verbose(self, message):
+		if self.verbose:
+			log.verbose(message)
 
 	def subcommand(self, subcommand, handler, usage):
 		if subcommand in self.subcommands:
@@ -33,9 +35,7 @@ class Command:
 			"usage": usage
 		}
 
-		if self.verbose:
-			log.verbose(f"Registered command '{self.prefix} {subcommand}'")
-
+		self.log_verbose(f"Registered command '{self.prefix} {subcommand}'")
 		return SUCCESS
 
 	def verify(self, args):
@@ -75,7 +75,7 @@ class Command:
 			subcommand = args.pop(0)
 		else:
 			subcommand = SUBCOMMAND_HELP
-			log.verbose(f"Defaulting to '{self.prefix} {SUBCOMMAND_HELP}'")
+			self.log_verbose(f"Defaulting to '{self.prefix} {SUBCOMMAND_HELP}'")
 
 		if subcommand not in self.subcommands:
 			log.error(f"No such command '{self.prefix} {subcommand}'")
