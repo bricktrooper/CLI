@@ -1,4 +1,4 @@
-from cli.colours import *
+from .colours import *
 
 def error(message):
 	print(f"{RED}X{RESET} {message}")
