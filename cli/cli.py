@@ -3,9 +3,7 @@ from . import log
 ERROR = -1
 SUCCESS = 0
 
-SUBCOMMAND_HELP = "help"
-
-class Command:
+class CLI:
 	def __init__(self, prefix, min, max = None, verbose = False):
 		self.subcommands = {}
 		self.prefix = prefix
@@ -19,68 +17,77 @@ class Command:
 		self.max = max
 
 		self.log_verbose(f"Initialized '{self.prefix} <{self.min}, {self.max}>'")
-		self.subcommand(SUBCOMMAND_HELP, self.help, "")
 
 	def log_verbose(self, message):
 		if self.verbose:
 			log.verbose(message)
 
-	def subcommand(self, subcommand, handler, usage):
+	def subcommand(self, subcommand, handler, min = None, max = None, usage = None):
 		if subcommand in self.subcommands:
-			log.error(f"Subcommand '{subcommand}' already exists under command '{self.prefix}'")
+			log.error(f"subcommand '{subcommand}' already exists under command '{self.prefix}'")
 			return ERROR
 
 		self.subcommands[subcommand] = {
 			"handler": handler,
-			"usage": usage
+			"usage": usage,   # parameter usage string for leaves
+			"min": min,
+			"max": max,
+			"leaf": min is not None and max is not None and usage is not None
 		}
 
-		self.log_verbose(f"Registered command '{self.prefix} {subcommand}'")
+		format = f" {usage}" if self.subcommands[subcommand]["leaf"] else ""
+		self.log_verbose(f"Registered '{self.prefix} {subcommand}{format}'")
 		return SUCCESS
 
-	def verify(self, args):
+	@staticmethod
+	def verify(args, min, max):
 		if args is None:
 			log.error("Corrupted arguments")
 			return ERROR
 
 		argc = len(args)
 
-		if argc < self.min:
+		if argc < min:
 			log.error("Too few arguments")
-			self.hint()
 			return ERROR
 
-		if self.max is not None and argc > self.max:
+		if max is not None and argc > max:
 			log.error("Too many arguments")
-			self.hint()
 			return ERROR
 
 		return argc
 
-	def help(self, prefix, args):
+	def hint(self):
 		for subcommand in self.subcommands:
 			usage = self.subcommands[subcommand]["usage"]
+			if usage is None:
+				usage = ""
 			log.info(f"{self.prefix} {subcommand} {usage}")
-		return SUCCESS
-
-	def hint(self):
-		log.info(f"Try '{self.prefix} {SUBCOMMAND_HELP}'")
 
 	def run(self, args):
-		argc = self.verify(args)
+		argc = CLI.verify(args, self.min, self.max)
 		if argc == ERROR:
+			self.hint()
 			return ERROR
 
-		if argc > 0:
-			subcommand = args.pop(0)
-		else:
-			subcommand = SUBCOMMAND_HELP
-			self.log_verbose(f"Defaulting to '{self.prefix} {SUBCOMMAND_HELP}'")
+		if argc == 0:
+			self.hint()
+			return SUCCESS
 
+		subcommand = args.pop(0)
 		if subcommand not in self.subcommands:
 			log.error(f"No such command '{self.prefix} {subcommand}'")
 			self.hint()
 			return ERROR
 
+		info = self.subcommands[subcommand]
+		if info["leaf"]:
+			min = info["min"]
+			max = info["max"]
+			usage = info["usage"]
+			if CLI.verify(args, min, max) == ERROR:
+				log.info(f"{self.prefix} {subcommand} {usage}")
+				return ERROR
+
 		prefix = f"{self.prefix} {subcommand}"
-		return self.subcommands[subcommand]["handler"](prefix, args)
+		return info["handler"](prefix, args)

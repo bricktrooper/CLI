@@ -1,1 +1,1 @@
-from .command import Command, ERROR, SUCCESS
+from .cli import CLI, ERROR, SUCCESS
