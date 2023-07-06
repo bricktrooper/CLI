@@ -57,11 +57,11 @@ class Command:
 		argc = len(args)
 
 		if argc < min:
-			log.error("Too few arguments")
+			log.error("Insufficient arguments")
 			return ERROR
 
 		if max is not None and argc > max:
-			log.error("Too many arguments")
+			log.error("Excessive arguments")
 			return ERROR
 
 		return argc
