@@ -1,22 +1,22 @@
 from sys import argv
-from cli import CLI
+from cli import Command
 
 def foo(prefix, args):
 	print("foo")
-	cli = CLI(prefix, 0)
-	cli.subcommand("hello", hello)
-	cli.subcommand("world", world, min = 1, max = 2, usage = "<x> [y]")
-	cli.run(args)
+	command = Command(prefix, 0)
+	command.branch(hello, "hello")
+	command.leaf(world, "world", "<x> [y]", 1, 2)
+	command.run(args)
 
 def bar(prefix, args):
 	print("bar")
 
 def hello(prefix, args):
 	print("hello")
-	cli = CLI(prefix, 0)
-	cli.subcommand("dead", dead, min = 0, max = 3, usage = "[x] [y] [z]")
-	cli.subcommand("beef", beef, min = 0, max = 0, usage = "")
-	cli.run(args)
+	command = Command(prefix, 0)
+	command.leaf(dead, "dead", "[x] [y] [z]", 0, 3)
+	command.leaf(beef, "beef", "", 0, 0)
+	command.run(args)
 
 def world(prefix, args):
 	print("world")
@@ -29,9 +29,9 @@ def beef(prefix, args):
 
 def main():
 	prefix = argv.pop(0)
-	cli = CLI(prefix, 0, verbose=True)
-	cli.subcommand("foo", foo)
-	cli.subcommand("bar", bar, min = 1, max = 1, usage = "<x>")
-	return cli.run(argv)
+	command = Command(prefix, 0)
+	command.branch(foo, "foo")
+	command.leaf(bar, "bar", "<x>", 1, 1)
+	return command.run(argv)
 
 exit(main())
