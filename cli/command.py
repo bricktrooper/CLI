@@ -71,7 +71,10 @@ class Command:
 			usage = self.subcommands[name].usage
 			if usage is None:
 				usage = ""
-			log.info(f"{self.prefix} {name} {usage}")
+			prefix = ""
+			if len(self.prefix) > 0:
+				prefix = f"{self.prefix} "
+			log.info(f"{prefix}{name} {usage}")
 
 	def run(self, args):
 		argc = Command.verify(args, self.min, self.max)
@@ -92,7 +95,10 @@ class Command:
 		subcommand = self.subcommands[name]
 		if subcommand.leaf:
 			if Command.verify(args, subcommand.min, subcommand.max) == ERROR:
-				log.info(f"{self.prefix} {name} {subcommand.usage}")
+				prefix = ""
+				if len(self.prefix) > 0:
+					prefix = f"{self.prefix} "
+				log.info(f"{prefix}{name} {subcommand.usage}")
 				return ERROR
 
 		prefix = f"{self.prefix} {name}"
