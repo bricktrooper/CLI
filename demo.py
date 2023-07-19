@@ -5,7 +5,7 @@ def foo(prefix, args):
 	print("foo")
 	command = Command(prefix, 0)
 	command.branch(hello, "hello")
-	command.leaf(world, "world", "<x> [y]", 1, 2)
+	command.leaf(world, "world", "<x> [y]", 1, 2, "World command")
 	command.run(args)
 
 def bar(prefix, args):
@@ -30,8 +30,8 @@ def beef(prefix, args):
 def main():
 	prefix = argv.pop(0)
 	command = Command(prefix, 0)
-	command.branch(foo, "foo")
-	command.leaf(bar, "bar", "<x>", 1, 1)
+	command.branch(foo, "foo", description = "Foo subcommand")
+	command.leaf(bar, "bar", "<x>", 1, 1, "Bar command")
 	return command.run(argv)
 
 exit(main())

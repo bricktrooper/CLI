@@ -4,13 +4,25 @@ ERROR = -1
 SUCCESS = 0
 
 class Subcommand:
-	def __init__(self, handler, name, usage = None, min = None, max = None, leaf = False):
+	def __init__(self, handler, name, usage = None, min = None, max = None, description = None, leaf = False):
 		self.handler = handler
 		self.name = name
 		self.usage = usage
 		self.min = min
 		self.max = max
+		self.description = description
 		self.leaf = leaf
+
+	def __str__(self):
+		string = "SUBCOMMAND\n"
+		string += f"handler     : {self.handler.__name__}\n"
+		string += f"name        : {self.name}\n"
+		string += f"usage       : {self.usage}\n"
+		string += f"min         : {self.min}\n"
+		string += f"max         : {self.max}\n"
+		string += f"description : {self.description}\n"
+		string += f"leaf        : {self.leaf}"
+		return string
 
 class Command:
 	def __init__(self, prefix, min, max = None, verbose = False):
@@ -30,21 +42,21 @@ class Command:
 		if self.verbose:
 			log.verbose(message)
 
-	def branch(self, handler, name):
+	def branch(self, handler, name, description = None):
 		if name in self.subcommands:
 			log.error(f"'{name}' already exists under '{self.prefix}'")
 			return ERROR
 
-		self.subcommands[name] = Subcommand(handler, name, leaf = False)
+		self.subcommands[name] = Subcommand(handler, name, description = description, leaf = False)
 		self.log_verbose(f"Registered branch '{self.prefix} {name}'")
 		return SUCCESS
 
-	def leaf(self, handler, name, usage, min, max):
+	def leaf(self, handler, name, usage, min, max, description = None):
 		if name in self.subcommands:
 			log.error(f"'{name}' already exists under '{self.prefix}'")
 			return ERROR
 
-		self.subcommands[name] = Subcommand(handler, name, usage, min, max, leaf = True)
+		self.subcommands[name] = Subcommand(handler, name, usage, min, max, description = description, leaf = True)
 		self.log_verbose(f"Registered leaf '{self.prefix} {name} {usage}'")
 		return SUCCESS
 
@@ -67,14 +79,34 @@ class Command:
 		return argc
 
 	def hint(self):
+		lines = {}
+		padding = 0
 		for name in self.subcommands:
 			usage = self.subcommands[name].usage
 			if usage is None:
 				usage = ""
+
 			prefix = ""
 			if len(self.prefix) > 0:
 				prefix = f"{self.prefix} "
-			log.info(f"{prefix}{name} {usage}")
+
+
+			usage = f"{prefix}{name} {usage}"
+			padding = max(len(usage), padding)
+
+			lines[name] = {
+				"usage":       usage,
+				"description": self.subcommands[name].description
+			}
+
+		for name in lines:
+			usage = lines[name]["usage"]
+			description = lines[name]["description"]
+			#print(usage, description)
+			if description is None:
+				log.info(usage)
+			else:
+				log.info("%-*s : %s" % (padding, usage, description))
 
 	def run(self, args):
 		argc = Command.verify(args, self.min, self.max)
