@@ -102,7 +102,6 @@ class Command:
 		for name in lines:
 			usage = lines[name]["usage"]
 			description = lines[name]["description"]
-			#print(usage, description)
 			if description is None:
 				log.info(usage)
 			else:

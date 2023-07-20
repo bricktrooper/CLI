@@ -1,0 +1,3 @@
+[submodule "submodules/logs"]
+	path = submodules/logs
+	url = git@github.com:bricktrooper/Logs.git
