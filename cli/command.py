@@ -1,4 +1,4 @@
-from . import log
+import log
 
 ERROR = -1
 SUCCESS = 0
